@@ -11,18 +11,24 @@ from tqdm import tqdm
 
 def test(opt):
     device = 'cuda:0'
-    pretrained = timm.create_model('convnext_base')
+    pretrained = timm.create_model('resnet50')
     model = StyleModel(pretrained)
     model.load_state_dict(torch.load(opt.ckpt))
     model.to(device)
     processing = Proces_dataset(opt.path, 'instances_default.json')
-    test_img,test_label = processing.train_val_test('/data/dmc/3_dota','test')
-    test_transformer = T.Compose([T.ToTensor()])
+    test_img,test_label = processing.train_val_test('data/dmc/3_dota','test')
+    test_transforms = T.Compose([
+        T.ToTensor(),
+        T.Normalize(
+            [0.485, 0.456, 0.406],
+            [0.229, 0.224, 0.225]
+            ),
+    ])
 
-    test_dataset = ScalpDataset(opt.path+'images/', test_img,test_label,transform = test_transformer)
-    test_dataloader = D.DataLoader(test_dataset, batch_size = opt.batch, shuffle = False, drop_last=False)
+    test_dataset = ScalpDataset(opt.path+'images/', test_img,test_label,transform = test_transforms)
+    test_dataloader = D.DataLoader(test_dataset, batch_size = 16, shuffle = False, drop_last=False)
     prediction_list = np.array([])
-
+    model.eval()
     with torch.no_grad():
         for images, labels in tqdm(test_dataloader):
             images = images.type(torch.FloatTensor).to(device)
@@ -37,10 +43,9 @@ def test(opt):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path',type=str,default='/data/dmc/2_coco/')
+    parser.add_argument('--path',type=str,default='data/dmc/2_coco/')
     parser.add_argument('--ckpt',type=str)
-    parser.add_argument('--batch',type=int, default= 16)
     opt = parser.parse_args()
     pred = test(opt)
-    print(pred)
-
+    
+    print(sum(pred))

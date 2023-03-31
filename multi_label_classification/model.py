@@ -25,6 +25,6 @@ class StyleModel(nn.Module):
         # 마지막 출력에 nn.Linear를 추가
         # multilabel을 예측해야 하기 때문에
         # softmax가 아닌 sigmoid를 적용
-        x = torch.sigmoid(self.FC(x))
+        x = self.FC(x) # BCEwithLogitloss 사용 시, sigmoid 안취해도 됨
         return x
 
