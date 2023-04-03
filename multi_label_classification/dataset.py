@@ -55,9 +55,9 @@ class Proces_dataset():
     def ohe_label(self,namelist):
         cls_list = []
         images_info = self.coco['images']
-        namelist = list(map(lambda x: x['file_name'],self.coco['images']))
+        total_namelist = list(map(lambda x: x['file_name'],self.coco['images']))
         for i in namelist:
-            idx = namelist.index(i)
+            idx = total_namelist.index(i)
             cls = images_info[idx]['class']
             cls_list.append(cls)
         ohe = MultiLabelBinarizer()
